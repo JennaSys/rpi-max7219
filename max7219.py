@@ -22,7 +22,7 @@ MAX7219_REG_SHUTDOWN = 0xC
 MAX7219_REG_DISPLAYTEST = 0xF
 
 SPI_BUS = 0  # hardware SPI
-SPI_BAUDRATE = 100000
+SPI_BAUDRATE = 1000000
 SPI_DEVICE = 0  # using CE0
 
 
@@ -41,6 +41,7 @@ class SevenSegment:
         self._spi.open(SPI_BUS, spi_device)
         self._spi.mode = 0b00
         self._spi.max_speed_hz = baudrate
+        self.baudrate = baudrate
 
         self.command(MAX7219_REG_SCANLIMIT, scan_digits-1)    # digits to display on each device  0-7
         self.command(MAX7219_REG_DECODEMODE, 0)   # use segments (not digits)
@@ -59,7 +60,7 @@ class SevenSegment:
         """
         Send the bytes (which should comprise of alternating command, data values) over the SPI device.
         """
-        self._spi.xfer2(data)
+        self._spi.xfer2(data, self.baudrate, 5)
 
     def clear(self, flush=True):
         """
