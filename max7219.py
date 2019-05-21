@@ -54,43 +54,31 @@ class SevenSegment:
         self.clear()
 
     def command(self, register, data):
-        """
-        Sets a specific register some data, replicated for all cascaded devices
-        """
+        """Sets a specific register some data, replicated for all cascaded devices."""
         self._write([register, data] * self.devices)
 
     def _write(self, data):
-        """
-        Send the bytes (which should comprise of alternating command, data values) over the SPI device.
-        """
+        """Send the bytes (which should comprise of alternating command, data values) over the SPI device."""
         self._spi.xfer2(data, self.baudrate, 5)
 
     def clear(self, flush=True):
-        """
-        Clears the buffer and if specified, flushes the display.
-        """
+        """Clears the buffer and if specified, flushes the display."""
         self._buffer = [0] * self.digits
         if flush:
             self.flush()
 
     def flush(self):
-        """
-        For each digit, cascade out the contents of the buffer cells to the SPI device.
-        """
+        """For each digit, cascade out the contents of the buffer cells to the SPI device."""
         for dev in range(self.devices):
             for pos in range(self.scan_digits):
                 self._write([pos + MAX7219_REG_DIGIT0, self._buffer[pos]])
 
     def brightness(self, intensity):
-        """
-        Sets the brightness level of all cascaded devices to the same intensity level, ranging from 0..15.
-        """
+        """Sets the brightness level of all cascaded devices to the same intensity level, ranging from 0..15."""
         self.command(MAX7219_REG_INTENSITY, intensity)
 
     def letter(self, position, char, dot=False, redraw=True):
-        """
-        Looks up the appropriate character representation for char and updates the buffer, flushes by default
-        """
+        """Looks up the appropriate character representation for char and updates the buffer, flushes by default."""
         value = get_char2(char) | (dot << 7)
         self._buffer[position] = value
 
@@ -98,9 +86,7 @@ class SevenSegment:
             self.flush()
 
     def text(self, text):
-        """
-        Outputs the text (as near as possible) on the specific device.
-        """
+        """Outputs the text (as near as possible) on the specific device."""
         self.clear(False)
         text = text[:self.digits]  # make sure we don't overrun the buffer
         for pos, char in enumerate(text):
@@ -109,9 +95,7 @@ class SevenSegment:
         self.flush()
 
     def number(self, val):
-        """
-        Formats the value according to the parameters supplied, and displays it
-        """
+        """Formats the value according to the parameters supplied, and displays it."""
         self.clear(False)
         strval = ''
         if isinstance(val, (int, float)):
@@ -140,9 +124,7 @@ class SevenSegment:
         self.flush()
 
     def scroll(self, rotate=True, reverse=False, flush=True):
-        """
-        Shifts buffer contents left or right (reverse), with option to wrap around (rotate)
-        """
+        """Shifts buffer contents left or right (reverse), with option to wrap around (rotate)."""
         if reverse:
             tmp = self._buffer.pop()
             if rotate:
@@ -160,9 +142,7 @@ class SevenSegment:
             self.flush()
 
     def message(self, text, delay=0.4):
-        """
-        Transitions the text message across the devices from left-to-right
-        """
+        """Transitions the text message across the devices from left-to-right."""
         self.clear(False)
         for char in text:
             time.sleep(delay)
