@@ -21,9 +21,9 @@ MAX7219_REG_SCANLIMIT = 0xB
 MAX7219_REG_SHUTDOWN = 0xC
 MAX7219_REG_DISPLAYTEST = 0xF
 
-SPI_BUS = 1  # hardware SPI
+SPI_BUS = 0  # hardware SPI
 SPI_BAUDRATE = 100000
-SPI_DEVICE = 0
+SPI_DEVICE = 0  # using CE0
 
 
 class SevenSegment:
@@ -40,7 +40,7 @@ class SevenSegment:
         self._spi = spidev.SpiDev()
         self._spi.mode(0x0)
         self._spi.max_speed_hz(baudrate)
-        self._spi.open(0, spi_device)
+        self._spi.open(SPI_BUS, spi_device)
 
         self.command(MAX7219_REG_SCANLIMIT, scan_digits-1)    # digits to display on each device  0-7
         self.command(MAX7219_REG_DECODEMODE, 0)   # use segments (not digits)
