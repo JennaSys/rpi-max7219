@@ -29,6 +29,7 @@ GND              | GND
 SPI0_MOSI        | DIN
 SPI0_CE0         | CS
 SPI0_SCLK        | CLK
+*NOTE: A level shifter (i.e. 2N7000) may be required on the data lines going to the MAX7219 to change the 3.3V logic to 5V*
 
 
 ## Credits
