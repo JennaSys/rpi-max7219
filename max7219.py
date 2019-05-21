@@ -149,4 +149,4 @@ class SevenSegment:
             self.scroll(rotate=False)
             self.letter(self.digits-1, char)
 
-# TODO: verify cascading
+# TODO: fix cascading
