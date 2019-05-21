@@ -13,7 +13,7 @@ seven_segment_ascii.py maps ascii characters to their segment representations.  
 
 ```python
 import max7219
-display = max7219.SevenSegment(cs=0)
+display = max7219.SevenSegment()
 display.text("ABCDEF")
 display.number(3.14159)
 display.message("Hello World")
