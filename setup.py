@@ -4,7 +4,7 @@ setup(
     name='rpi-max7219',
     version='0.1.0',
     description='Raspberry Pi driver for MAX7219 with 7-segment modules.',
-    long_description=open('README').read(),
+    long_description=open('README.md').read(),
     url='https://github.com/JennaSys/rpi-max7219',
     author='John Sheehan',
     author_email='jennasyseng@gmail.com',
