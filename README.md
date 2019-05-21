@@ -11,7 +11,7 @@ seven_segment_ascii.py maps ascii characters to their segment representations.  
 
 
 ## Installation
-To install the library directly from github, you can enter this from a command prompt on your Raspberry Pi:
+To install the library directly from github, you can enter the following from a command prompt on your Raspberry Pi:
 ```bash
 pip3 install git+https://github.com/JennaSys/rpi-max7219.git
 ```
