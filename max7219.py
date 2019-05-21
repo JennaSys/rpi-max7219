@@ -29,8 +29,11 @@ SPI_DEVICE = 0  # using CE0
 class SevenSegment:
     def __init__(self, digits=8, scan_digits=MAX7219_DIGITS, baudrate=SPI_BAUDRATE, spi_device=SPI_DEVICE):
         """
-        Constructor: `digits` should be the number of individual digits being displayed. `cs` is the chip select pin.
-        `scan_digits` is the number of digits each max7219 displays
+        Constructor:
+        `digits` should be the total number of individual digits being displayed
+        `scan_digits` is the number of digits each individual max7219 displays
+        `baudrate` defaults to 1MHz, note that excessive rates may result in instability (and is probably unnecessary)
+        `spi_device` indicates the CEx chip enable (CS) pin on the RasPi (0 or 1 for CE0 or CE1)
         """
 
         self.digits = digits
