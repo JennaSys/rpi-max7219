@@ -38,8 +38,8 @@ class SevenSegment:
         self.scan_digits = scan_digits
         self._buffer = [0] * digits
         self._spi = spidev.SpiDev()
-        self._spi.mode(0x0)
-        self._spi.max_speed_hz(baudrate)
+        self._spi.mode = 0b00
+        self._spi.max_speed_hz = baudrate
         self._spi.open(SPI_BUS, spi_device)
 
         self.command(MAX7219_REG_SCANLIMIT, scan_digits-1)    # digits to display on each device  0-7
