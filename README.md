@@ -1,7 +1,7 @@
 # rpi-max7219
 **Raspberry Pi driver for MAX7219 with 7-segment modules**
 
-* Utilizes hardware SPI
+* Utilizes hardware SPI (spidev library required)
 * Supports cascading MAX7219 devices
 * Number of digits per MAX7219 device can be specified
 
