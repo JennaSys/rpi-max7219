@@ -37,7 +37,7 @@ class SevenSegment:
         """
 
         self.digits = digits
-        self.devices = -(-digits // MAX7219_DIGITS)  # ceiling integer division
+        self.devices = -(-digits // scan_digits)  # ceiling integer division
         self.scan_digits = scan_digits
         self._buffer = [0] * digits
         self._spi = spidev.SpiDev()
@@ -71,18 +71,18 @@ class SevenSegment:
         """For each digit, cascade out the contents of the buffer cells to the SPI device."""
         for dev in range(self.devices):
             for pos in range(self.scan_digits):
-                self._write([pos + MAX7219_REG_DIGIT0, self._buffer[pos]])
+                self._write([pos + MAX7219_REG_DIGIT0, self._buffer[pos + (dev * self.scan_digits)]] + ([MAX7219_REG_NOOP, 0] * dev))
 
     def brightness(self, intensity):
         """Sets the brightness level of all cascaded devices to the same intensity level, ranging from 0..15."""
         self.command(MAX7219_REG_INTENSITY, intensity)
 
-    def letter(self, position, char, dot=False, redraw=True):
+    def letter(self, position, char, dot=False, flush=True):
         """Looks up the appropriate character representation for char and updates the buffer, flushes by default."""
         value = get_char2(char) | (dot << 7)
         self._buffer[position] = value
 
-        if redraw:
+        if flush:
             self.flush()
 
     def text(self, text):
@@ -90,7 +90,7 @@ class SevenSegment:
         self.clear(False)
         text = text[:self.digits]  # make sure we don't overrun the buffer
         for pos, char in enumerate(text):
-            self.letter(pos, char, redraw=False)
+            self.letter(pos, char, flush=False)
 
         self.flush()
 
@@ -146,7 +146,5 @@ class SevenSegment:
         self.clear(False)
         for char in text:
             time.sleep(delay)
-            self.scroll(rotate=False)
+            self.scroll(rotate=False, flush=False)
             self.letter(self.digits-1, char)
-
-# TODO: fix cascading
