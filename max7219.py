@@ -69,6 +69,8 @@ class SevenSegment:
 
     def flush(self):
         """For each digit, cascade out the contents of the buffer cells to the SPI device."""
+        # TODO: fix glitchiness
+        # TODO: flush buffer to devices in parallel rather than use NOOP
         for dev in range(self.devices):
             for pos in range(self.scan_digits):
                 self._write([pos + MAX7219_REG_DIGIT0, self._buffer[pos + (dev * self.scan_digits)]] + ([MAX7219_REG_NOOP, 0] * dev))
