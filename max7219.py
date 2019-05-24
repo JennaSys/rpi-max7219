@@ -70,16 +70,16 @@ class SevenSegment:
     def flush(self):
         """write out the contents of the buffer items to the SPI device."""
         # TODO: fix glitchiness
-        # for dev in range(self.devices):
-        #     for pos in range(self.scan_digits):
-        #         self._write([pos + MAX7219_REG_DIGIT0, self._buffer[pos + (dev * self.scan_digits)]] + ([MAX7219_REG_NOOP, 0] * dev))
+        for dev in range(self.devices):
+            for pos in range(self.scan_digits):
+                self._write([pos + MAX7219_REG_DIGIT0, self._buffer[pos + (dev * self.scan_digits)]] + ([MAX7219_REG_NOOP, 0] * dev))
         # TODO: flush buffer to devices in parallel rather than use NOOP to improve efficiency
-        for pos in range(self.scan_digits):
-            packet = []
-            for dev in range(self.devices):
-                if pos + (dev * self.scan_digits) < self.digits:  # make sure we don't overrun the buffer if digits % scan_digits != 0
-                    packet += [pos + MAX7219_REG_DIGIT0, self._buffer[pos + (dev * self.scan_digits)]]
-            self._write(packet)
+        # for pos in range(self.scan_digits):
+        #     packet = []
+        #     for dev in range(self.devices):
+        #         if pos + (dev * self.scan_digits) < self.digits:  # make sure we don't overrun the buffer if digits % scan_digits != 0
+        #             packet += [pos + MAX7219_REG_DIGIT0, self._buffer[pos + (dev * self.scan_digits)]]
+        #     self._write(packet)
 
     def write_letter(self, position, char, dot=False):
         """Updates the buffer and writes out ONLY that character instead of the entire buffer"""
