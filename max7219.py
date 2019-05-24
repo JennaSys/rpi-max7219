@@ -68,12 +68,26 @@ class SevenSegment:
             self.flush()
 
     def flush(self):
-        """For each digit, cascade out the contents of the buffer cells to the SPI device."""
+        """write out the contents of the buffer items to the SPI device."""
         # TODO: fix glitchiness
-        # TODO: flush buffer to devices in parallel rather than use NOOP
-        for dev in range(self.devices):
-            for pos in range(self.scan_digits):
-                self._write([pos + MAX7219_REG_DIGIT0, self._buffer[pos + (dev * self.scan_digits)]] + ([MAX7219_REG_NOOP, 0] * dev))
+        # for dev in range(self.devices):
+        #     for pos in range(self.scan_digits):
+        #         self._write([pos + MAX7219_REG_DIGIT0, self._buffer[pos + (dev * self.scan_digits)]] + ([MAX7219_REG_NOOP, 0] * dev))
+        # TODO: flush buffer to devices in parallel rather than use NOOP to improve efficiency
+        for pos in range(self.scan_digits):
+            packet = []
+            for dev in range(self.devices):
+                if pos + (dev * self.scan_digits) < self.digits:  # make sure we don't overrun the buffer if digits % scan_digits != 0
+                    packet += [pos + MAX7219_REG_DIGIT0, self._buffer[pos + (dev * self.scan_digits)]]
+            self._write(packet)
+
+    def write_letter(self, position, char, dot=False):
+        """Updates the buffer and writes out ONLY that character instead of the entire buffer"""
+        self.letter(position, char, dot=dot, flush=False)
+        if position < self.digits:
+            dev = position // self.scan_digits
+            # Additional NOOP's push the char out to the appropriate device if cascaded
+            self._write([position + MAX7219_REG_DIGIT0, self._buffer[position + (dev * self.scan_digits)]] + ([MAX7219_REG_NOOP, 0] * dev))
 
     def brightness(self, intensity):
         """Sets the brightness level of all cascaded devices to the same intensity level, ranging from 0..15."""
@@ -81,8 +95,9 @@ class SevenSegment:
 
     def letter(self, position, char, dot=False, flush=True):
         """Looks up the appropriate character representation for char and updates the buffer, flushes by default."""
-        value = get_char2(char) | (dot << 7)
-        self._buffer[position] = value
+        if position < self.digits:
+            value = get_char2(char) | (dot << 7)
+            self._buffer[position] = value
 
         if flush:
             self.flush()
