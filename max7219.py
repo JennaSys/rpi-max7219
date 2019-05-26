@@ -69,25 +69,24 @@ class SevenSegment:
 
     def flush(self):
         """write out the contents of the buffer items to the SPI device."""
-        # TODO: fix glitchiness
-        for dev in range(self.devices):
-            for pos in range(self.scan_digits):
-                self._write([pos + MAX7219_REG_DIGIT0, self._buffer[pos + (dev * self.scan_digits)]] + ([MAX7219_REG_NOOP, 0] * dev))
-        # TODO: flush buffer to devices in parallel rather than use NOOP to improve efficiency
-        # for pos in range(self.scan_digits):
-        #     packet = []
-        #     for dev in range(self.devices):
-        #         if pos + (dev * self.scan_digits) < self.digits:  # make sure we don't overrun the buffer if digits % scan_digits != 0
-        #             packet += [pos + MAX7219_REG_DIGIT0, self._buffer[pos + (dev * self.scan_digits)]]
-        #     self._write(packet)
+        self.command(MAX7219_REG_SHUTDOWN, 0)
+        for pos in range(self.digits-1, -1, -1):  # LIFO
+            digit = pos % self.scan_digits
+            self._write([digit + MAX7219_REG_DIGIT0, self._buffer[pos]])
+        self.command(MAX7219_REG_SHUTDOWN, 1)
 
     def write_letter(self, position, char, dot=False):
         """Updates the buffer and writes out ONLY that character instead of the entire buffer"""
         self.letter(position, char, dot=dot, flush=False)
         if position < self.digits:
-            dev = position // self.scan_digits
-            # Additional NOOP's push the char out to the appropriate device if cascaded
-            self._write([position + MAX7219_REG_DIGIT0, self._buffer[position + (dev * self.scan_digits)]] + ([MAX7219_REG_NOOP, 0] * dev))
+            device = position // self.scan_digits
+            pos = position % self.scan_digits
+            for dev in range(self.devices-1, -1, -1):  # LIFO
+                if dev == device:
+                    self._write([pos + MAX7219_REG_DIGIT0, self._buffer[position]])
+                else:
+                    # Additional NOOP's push the char out to the appropriate device and/or pad if cascaded
+                    self._write([MAX7219_REG_NOOP, 0])
 
     def brightness(self, intensity):
         """Sets the brightness level of all cascaded devices to the same intensity level, ranging from 0..15."""
