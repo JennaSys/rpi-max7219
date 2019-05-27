@@ -69,7 +69,6 @@ class SevenSegment:
 
     def flush(self):
         """write out the contents of the buffer items to the SPI device."""
-        self.command(MAX7219_REG_SHUTDOWN, 0)
         for pos in range(self.scan_digits):
             packet = []
             for dev in range(self.devices-1, -1, -1):
