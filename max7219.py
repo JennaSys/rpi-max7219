@@ -59,7 +59,7 @@ class SevenSegment:
 
     def _write(self, data):
         """Send the bytes (which should comprise of alternating command, data values) over the SPI device."""
-        self._spi.xfer2(data, self.baudrate, 5)
+        self._spi.xfer2(data)
 
     def clear(self, flush=True):
         """Clears the buffer and if specified, flushes the display."""
@@ -70,10 +70,16 @@ class SevenSegment:
     def flush(self):
         """write out the contents of the buffer items to the SPI device."""
         self.command(MAX7219_REG_SHUTDOWN, 0)
-        for pos in range(self.digits-1, -1, -1):  # LIFO
-            digit = pos % self.scan_digits
-            self._write([digit + MAX7219_REG_DIGIT0, self._buffer[pos]])
-        self.command(MAX7219_REG_SHUTDOWN, 1)
+        for pos in range(self.scan_digits):
+            packet = []
+            for dev in range(self.devices-1, -1, -1):
+                buffer_pos = pos + (dev * self.scan_digits)
+                if buffer_pos < self.digits:
+                    data = self._buffer[buffer_pos]
+                else:
+                    data = 0x0
+                packet += [pos + MAX7219_REG_DIGIT0, data]
+            self._write(packet)
 
     def write_letter(self, position, char, dot=False):
         """Updates the buffer and writes out ONLY that character instead of the entire buffer"""
@@ -81,12 +87,14 @@ class SevenSegment:
         if position < self.digits:
             device = position // self.scan_digits
             pos = position % self.scan_digits
+            packet = []
             for dev in range(self.devices-1, -1, -1):  # LIFO
                 if dev == device:
-                    self._write([pos + MAX7219_REG_DIGIT0, self._buffer[position]])
+                    packet += [pos + MAX7219_REG_DIGIT0, self._buffer[position]]
                 else:
                     # Additional NOOP's push the char out to the appropriate device and/or pad if cascaded
-                    self._write([MAX7219_REG_NOOP, 0])
+                    packet += [MAX7219_REG_NOOP, 0x0]
+            self._write(packet)
 
     def brightness(self, intensity):
         """Sets the brightness level of all cascaded devices to the same intensity level, ranging from 0..15."""
