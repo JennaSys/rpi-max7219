@@ -27,18 +27,20 @@ SPI_DEVICE = 0  # using CE0
 
 
 class SevenSegment:
-    def __init__(self, digits=8, scan_digits=MAX7219_DIGITS, baudrate=SPI_BAUDRATE, spi_device=SPI_DEVICE):
+    def __init__(self, digits=8, scan_digits=MAX7219_DIGITS, baudrate=SPI_BAUDRATE, spi_device=SPI_DEVICE, reverse=False):
         """
         Constructor:
         `digits` should be the total number of individual digits being displayed
         `scan_digits` is the number of digits each individual max7219 displays
         `baudrate` defaults to 1MHz, note that excessive rates may result in instability (and is probably unnecessary)
         `spi_device` indicates the CEx chip enable (CS) pin on the RasPi (0 or 1 for CE0 or CE1)
+        `reverse` changes the write-order of characters for displays where digits are wired R-to-L instead of L-to-R
         """
 
         self.digits = digits
         self.devices = -(-digits // scan_digits)  # ceiling integer division
         self.scan_digits = scan_digits
+        self.reverse = reverse
         self._buffer = [0] * digits
         self._spi = spidev.SpiDev()
         self._spi.open(SPI_BUS, spi_device)
@@ -58,7 +60,7 @@ class SevenSegment:
         self._write([register, data] * self.devices)
 
     def _write(self, data):
-        """Send the bytes (which should comprise of alternating command, data values) over the SPI device."""
+        """Send the bytes (which should be comprised of alternating command, data values) over the SPI device."""
         self._spi.xfer2(data)
 
     def clear(self, flush=True):
@@ -69,16 +71,18 @@ class SevenSegment:
 
     def flush(self):
         """write out the contents of the buffer items to the SPI device."""
-        for pos in range(self.scan_digits):
-            packet = []
-            for dev in range(self.devices-1, -1, -1):
-                buffer_pos = pos + (dev * self.scan_digits)
-                if buffer_pos < self.digits:
-                    data = self._buffer[buffer_pos]
-                else:
-                    data = 0x0
-                packet += [pos + MAX7219_REG_DIGIT0, data]
-            self._write(packet)
+        buffer = self._buffer.copy()
+        if self.reverse:
+            buffer.reverse()
+
+        for dev in range(self.devices):
+            if self.reverse:
+                current_dev = self.devices - dev - 1
+            else:
+                current_dev = dev
+
+            for pos in range(self.scan_digits):
+                self._write([pos + MAX7219_REG_DIGIT0, buffer[pos + (current_dev * self.scan_digits)]] + ([MAX7219_REG_NOOP, 0] * dev))
 
     def write_letter(self, position, char, dot=False):
         """Updates the buffer and writes out ONLY that character instead of the entire buffer"""

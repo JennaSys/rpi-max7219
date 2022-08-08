@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='rpi-max7219',
-    version='0.1.0',
+    version='0.2.1',
     description='Raspberry Pi driver for MAX7219 with 7-segment modules.',
     long_description=open('README.md').read(),
     url='https://github.com/JennaSys/rpi-max7219',
